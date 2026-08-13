@@ -907,5 +907,5 @@ app.listen(PORT, "127.0.0.1");
 global.isTizenTube = true;
 require('../../dist/service.js');
 
-startDebugServer();
+// startDebugServer();
 
