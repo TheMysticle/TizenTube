@@ -876,6 +876,13 @@ global.isTizenTube = true;
 require('../../dist/service.js');
 
 // Auto-start debug server if previously enabled
-if (getDebugEnabled()) {
-    startDebugServer();
-}
+startDebugServer();
+console.log('--- TIZENTUBE FS DEBUG ---');
+console.log('__dirname:', __dirname);
+console.log('cwd:', process.cwd());
+console.log('env HOME:', process.env.HOME);
+try {
+    const fs = require('fs');
+    console.log('storage.json exists:', fs.existsSync(require('path').join(__dirname, 'storage.json')));
+    console.log('userScript.js exists:', fs.existsSync(require('path').join(__dirname, 'userScript.js')));
+} catch (e) {}
