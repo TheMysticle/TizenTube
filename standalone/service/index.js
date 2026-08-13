@@ -767,6 +767,33 @@ app.all('*', (req, res) => {
                             continue;
                         }
                     }
+                    if (lowerKey === 'location') {
+                        let redirectUrl = value;
+                        if (redirectUrl.startsWith('//')) {
+                            redirectUrl = 'https:' + redirectUrl;
+                        }
+                        
+                        if (redirectUrl.startsWith('/')) {
+                            redirectUrl = `http://localhost:${PORT}${redirectUrl}`;
+                        } else {
+                            try {
+                                const parsedLoc = URL.parse(redirectUrl);
+                                if (parsedLoc && parsedLoc.hostname) {
+                                    const hn = parsedLoc.hostname;
+                                    if (hn === 'youtube.com' || hn === 'www.youtube.com' || hn === 'm.youtube.com') {
+                                        redirectUrl = `http://localhost:${PORT}${parsedLoc.path || ''}${parsedLoc.hash || ''}`;
+                                    } else if (hn.endsWith('googlevideo.com') || hn.endsWith('youtube.com')
+                                        || hn.endsWith('gstatic.com') || hn.endsWith('.google.com')
+                                        || hn.endsWith('.googleapis.com') || hn.endsWith('googleusercontent.com')
+                                        || hn.endsWith('.ggpht.com')) {
+                                        redirectUrl = `http://localhost:${PORT}/cors-bypass/${redirectUrl}`;
+                                    }
+                                }
+                            } catch (e) {}
+                        }
+                        res.setHeader(key, redirectUrl);
+                        continue;
+                    }
 
                     res.setHeader(key, value);
                 }
