@@ -80,7 +80,7 @@
                         fetch(`http://localhost:8099/tizentube/debugger${args ? `?${args}` : ''}`);
                         tizen.application.getCurrentApplication().exit();
                     } else if (!res.canConnectToDaemon) location.href = `http://localhost:8099/tv?additionalDataUrl=http%3A%2F%2Flocalhost%3A8095%2Fdial%2Fapps%2FYouTube${args ? `&${args}` : ''}`
-                }).catch(() => window.location.reload());
+                }).catch(() => setTimeout(useInjectorOrProxy, 500));
         }
 
         tizen.application.launchAppControl(

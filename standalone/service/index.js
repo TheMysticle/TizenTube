@@ -40,6 +40,20 @@ app.get('/tizentube/debugger', (req, res) => {
         });
     }, 50);
 });
+const storageFile = require('path').join(__dirname, 'storage.json');
+app.get('/tizentube/storage', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    if (require('fs').existsSync(storageFile)) {
+        res.json(JSON.parse(require('fs').readFileSync(storageFile, 'utf8')));
+    } else {
+        res.json({ localStorage: {}, cookies: "" });
+    }
+});
+app.post('/tizentube/storage', express.json({limit: '10mb'}), (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    require('fs').writeFileSync(storageFile, JSON.stringify(req.body));
+    res.send('OK');
+});
 
 app.all('*', (req, res) => {
     const isCorsBypass = req.path.indexOf('/cors-bypass/') === 0;
@@ -115,6 +129,7 @@ app.all('*', (req, res) => {
                                     .replace(/Domain=[^;]+/i, 'Domain=localhost')
                                     .replace(/;\s*Secure/i, '')
                                     .replace(/;\s*SameSite=None/i, '')
+                                    .replace(/;\s*HttpOnly/gi, '')
                                     .replace(/;\s*;/g, ';')
                                     .replace(/;\s*$/, '');
                             });

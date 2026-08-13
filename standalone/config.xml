@@ -29,7 +29,7 @@
     <tizen:privilege name="http://tizen.org/privilege/unlimitedstorage"/>
     <tizen:privilege name="http://tizen.org/privilege/application.launch"/>
     <tizen:profile name="tv-samsung"/>
-    <tizen:service id="xvvl3S1TT1.StandaloneService">
+    <tizen:service id="xvvl3S1TT1.StandaloneService" auto-restart="true">
         <tizen:content src="service/dist/index.js"/>
         <tizen:name>StandaloneService</tizen:name>
         <tizen:description>StandaloneService</tizen:description>

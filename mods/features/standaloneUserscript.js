@@ -26,6 +26,42 @@ function redirectUrl(originalUrl) {
 }
 
 export default function () {
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'http://localhost:8099/tizentube/storage', false);
+        xhr.send();
+        if (xhr.status === 200) {
+            var data = JSON.parse(xhr.responseText);
+            if (data && data.localStorage) {
+                for (var k in data.localStorage) {
+                    window.localStorage.setItem(k, data.localStorage[k]);
+                }
+            }
+            if (data && data.cookies) {
+                var cookies = data.cookies.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    if (cookies[i].trim()) {
+                        document.cookie = cookies[i].trim();
+                    }
+                }
+            }
+        }
+        setInterval(function() {
+            var ls = {};
+            for (var i = 0; i < window.localStorage.length; i++) {
+                var key = window.localStorage.key(i);
+                ls[key] = window.localStorage.getItem(key);
+            }
+            var payload = JSON.stringify({ localStorage: ls, cookies: document.cookie });
+            var syncXhr = new XMLHttpRequest();
+            syncXhr.open('POST', 'http://localhost:8099/tizentube/storage', true);
+            syncXhr.setRequestHeader('Content-Type', 'application/json');
+            syncXhr.send(payload);
+        }, 5000);
+    } catch (e) {
+        console.error('TizenTube Storage Sync Error:', e);
+    }
+
     const originalFetch = window.fetch;
     if (originalFetch) {
         window.fetch = function (input, init) {
