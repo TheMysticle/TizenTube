@@ -67,11 +67,34 @@
         function useInjectorOrProxy() {
             let args;
             try {
-                const data = tizen.application.getCurrentApplication().getRequestedAppControl().appControl.data;
-                const parsedData = JSON.parse(data[0].value[0]);
-                args = parsedData.args;
+                const reqAppControl = tizen.application.getCurrentApplication().getRequestedAppControl();
+                if (reqAppControl && reqAppControl.appControl) {
+                    const data = reqAppControl.appControl.data;
+                    
+                    if (data && data.length > 0) {
+                        for (let i = 0; i < data.length; i++) {
+                            // Some launchers use PAYLOAD directly
+                            if (data[i].key === 'PAYLOAD') {
+                                let dialData = data[i].value[0];
+                                if (dialData) {
+                                    args = dialData.replace('action=set&', '');
+                                }
+                            }
+                            
+                            // Tizen OS and TizenBrew service use the module key
+                            if (data[i].key === 'module') {
+                                try {
+                                    const parsedData = JSON.parse(data[i].value[0]);
+                                    if (parsedData.args) {
+                                        args = parsedData.args;
+                                    }
+                                } catch (e) {}
+                            }
+                        }
+                    }
+                }
             } catch (e) {
-                // Do nothing.
+                // Ignore
             }
             fetch('http://localhost:8099/tizentube/getState')
                 .then(r => r.json())
@@ -79,7 +102,9 @@
                     if (res.canConnectToDaemon && !res.isConnecting) {
                         fetch(`http://localhost:8099/tizentube/debugger${args ? `?${args}` : ''}`);
                         tizen.application.getCurrentApplication().exit();
-                    } else if (!res.canConnectToDaemon) location.href = `http://localhost:8099/tv?additionalDataUrl=http%3A%2F%2Flocalhost%3A8095%2Fdial%2Fapps%2FYouTube${args ? `&${args}` : ''}`
+                    } else if (!res.canConnectToDaemon) {
+                        location.href = `http://localhost:8099/tv?additionalDataUrl=http%3A%2F%2Flocalhost%3A8095%2Fdial%2Fapps%2FYouTube${args ? `&${args}` : ''}`;
+                    }
                 }).catch(() => setTimeout(useInjectorOrProxy, 500));
         }
 
