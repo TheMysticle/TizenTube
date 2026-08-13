@@ -27,17 +27,22 @@ function redirectUrl(originalUrl) {
 
 export default function () {
     try {
-        var data = window.__tizentubeStorage;
-        if (data && data.localStorage) {
-            for (var k in data.localStorage) {
-                window.localStorage.setItem(k, data.localStorage[k]);
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'http://localhost:8099/tizentube/storage', false);
+        xhr.send();
+        if (xhr.status === 200) {
+            var data = JSON.parse(xhr.responseText);
+            if (data && data.localStorage) {
+                for (var k in data.localStorage) {
+                    window.localStorage.setItem(k, data.localStorage[k]);
+                }
             }
-        }
-        if (data && data.cookies) {
-            var cookies = data.cookies.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                if (cookies[i].trim()) {
-                    document.cookie = cookies[i].trim();
+            if (data && data.cookies) {
+                var cookies = data.cookies.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    if (cookies[i].trim()) {
+                        document.cookie = cookies[i].trim();
+                    }
                 }
             }
         }

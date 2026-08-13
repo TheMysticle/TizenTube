@@ -86,7 +86,7 @@
                                 try {
                                     const parsedData = JSON.parse(data[i].value[0]);
                                     if (parsedData.args) {
-                                        args = parsedData.args.replace(/&?dialLaunch=watch/g, '');
+                                        args = parsedData.args;
                                     }
                                 } catch (e) {}
                             }

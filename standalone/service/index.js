@@ -815,16 +815,7 @@ app.all('*', (req, res) => {
                         if (require('fs').existsSync(require('path').join(__dirname, 'userScript.js'))) {
                             scriptUrl = `http://localhost:${PORT}/tizentube/localUserScript.js?ver=${Date.now()}`;
                         }
-                        
-                        let storageData = '{ "localStorage": {}, "cookies": "" }';
-                        try {
-                            const storageFile = require('path').join(__dirname, 'storage.json');
-                            if (require('fs').existsSync(storageFile)) {
-                                storageData = require('fs').readFileSync(storageFile, 'utf8');
-                            }
-                        } catch(e) {}
-                        
-                        text += `<script>window.__tizentubeStorage = ${storageData};</script><script src="${scriptUrl}"></script>`;
+                        text += `<script src="${scriptUrl}"></script>`;
                     }
 
                     const proxyPrefix = `http://localhost:${PORT}/cors-bypass/`;
