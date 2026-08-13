@@ -19,6 +19,12 @@ async function build() {
     if (!fs.existsSync(outDir)) fs.mkdirSync(outDir);
 
     fs.writeFileSync(path.join(outDir, 'index.js'), fixedCode);
+
+    // Also copy the local userscript if it exists (for local testing)
+    const localUserScriptPath = path.join(__dirname, '..', '..', 'dist', 'userScript.js');
+    if (fs.existsSync(localUserScriptPath)) {
+        fs.copyFileSync(localUserScriptPath, path.join(outDir, 'userScript.js'));
+    }
 }
 
 build();

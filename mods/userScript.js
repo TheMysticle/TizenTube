@@ -2,6 +2,17 @@ import initPatches from "./features/standaloneUserscript.js";
 if (window.location.hostname === 'localhost') {
     initPatches();
 }
+import { configChangeEmitter } from './config.js';
+if (window.location.hostname === 'localhost') {
+    configChangeEmitter.addEventListener('configChange', function(e) {
+        if (e.detail && e.detail.key === 'enableDebugServer') {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'http://localhost:8099/tizentube/debug-server/toggle', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({ enabled: !!e.detail.value }));
+        }
+    });
+}
 import "./features/userAgentSpoofing.js";
 import "whatwg-fetch";
 import "core-js/proposals/object-getownpropertydescriptors";

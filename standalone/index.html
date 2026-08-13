@@ -65,9 +65,9 @@
         const serviceId = pkgId + ".StandaloneService";
 
         function useInjectorOrProxy() {
-            const data = tizen.application.getCurrentApplication().getRequestedAppControl().appControl.data;
             let args;
             try {
+                const data = tizen.application.getCurrentApplication().getRequestedAppControl().appControl.data;
                 const parsedData = JSON.parse(data[0].value[0]);
                 args = parsedData.args;
             } catch (e) {

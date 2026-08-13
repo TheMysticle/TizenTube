@@ -798,6 +798,12 @@ export default function modernUI(update, parameters) {
                 }
             ]
         },
+        window.location.hostname === 'localhost' ? {
+            name: 'Debug Server',
+            icon: 'INFO',
+            value: 'enableDebugServer',
+            subtitle: configRead('enableDebugServer') ? 'Enabled \u2014 visit http://<TV-IP>:8098' : 'Disabled'
+        } : null,
         window.h5vcc && window.h5vcc.tizentube ?
             {
                 name: t('settings.options.updater.title'),

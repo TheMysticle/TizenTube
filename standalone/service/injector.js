@@ -16,14 +16,18 @@ function connectToDebugger(host, port, args) {
             client.Page.enable();
 
             client.on('Runtime.executionContextCreated', m => {
-                fetch('https://cdn.jsdelivr.net/npm/@foxreis/tizentube/dist/userScript.js').then(res => res.text()).then(modFile => {
+                fetch('http://localhost:8099/tizentube/localUserScript.js').then(res => {
+                    if (!res.ok) throw new Error('Local not found');
+                    return res;
+                }).catch(() => fetch('https://cdn.jsdelivr.net/npm/@foxreis/tizentube/dist/userScript.js'))
+                .then(res => res.text()).then(modFile => {
                     client.Runtime.evaluate({ expression: modFile, contextId: m.context.id });
                 }).catch(e => {
-                    client.Runtime.evaluate({ expression: 'alert("Failed to request to JSDelivr CDN.")', contextId: m.context.id });
+                    client.Runtime.evaluate({ expression: 'alert("Failed to request userscript.")', contextId: m.context.id });
                 });
             });
 
-            client.Page.navigate({ url: `https://youtube.com/tv?additionalDataUrl=http%3A%2F%2Flocalhost%3A8085%2Fdial%2Fapps%2FYouTube${args ? `&${args}` : ''}` });
+            client.Page.navigate({ url: `https://youtube.com/tv?additionalDataUrl=http%3A%2F%2Flocalhost%3A8095%2Fdial%2Fapps%2FYouTube${args ? `&${args}` : ''}` });
 
             client.Page.setBypassCSP({ enabled: true });
         })

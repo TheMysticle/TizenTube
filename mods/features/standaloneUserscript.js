@@ -62,6 +62,69 @@ export default function () {
         console.error('TizenTube Storage Sync Error:', e);
     }
 
+    // Debug Server: hook console methods to forward logs to the background service
+    try {
+        var debugEnabled = false;
+        try {
+            var configStr = window.localStorage.getItem('ytaf-configuration');
+            if (configStr) {
+                var parsedConfig = JSON.parse(configStr);
+                debugEnabled = !!parsedConfig.enableDebugServer;
+            }
+        } catch (ce) {}
+
+        if (debugEnabled) {
+            var debugLogQueue = [];
+            var origConsoleLog = console.log;
+            var origConsoleWarn = console.warn;
+            var origConsoleError = console.error;
+            var origConsoleInfo = console.info;
+
+            function hookConsole(level, origFn) {
+                console[level] = function() {
+                    var args = Array.prototype.slice.call(arguments);
+                    var msg = args.map(function(a) {
+                        if (typeof a === 'string') return a;
+                        try { return JSON.stringify(a); } catch(e) { return String(a); }
+                    }).join(' ');
+                    debugLogQueue.push({ level: level, message: msg, source: 'client' });
+                    return origFn.apply(console, arguments);
+                };
+            }
+
+            hookConsole('log', origConsoleLog);
+            hookConsole('warn', origConsoleWarn);
+            hookConsole('error', origConsoleError);
+            hookConsole('info', origConsoleInfo);
+
+            // Flush debug logs every 500ms
+            setInterval(function() {
+                if (debugLogQueue.length === 0) return;
+                var batch = debugLogQueue.splice(0, debugLogQueue.length);
+                var flushXhr = new XMLHttpRequest();
+                flushXhr.open('POST', 'http://localhost:8099/tizentube/debug-log', true);
+                flushXhr.setRequestHeader('Content-Type', 'application/json');
+                flushXhr.send(JSON.stringify(batch));
+            }, 500);
+
+            // Capture unhandled errors
+            window.addEventListener('error', function(e) {
+                debugLogQueue.push({
+                    level: 'error',
+                    message: 'Uncaught: ' + (e.message || '') + ' at ' + (e.filename || '') + ':' + (e.lineno || ''),
+                    source: 'window.onerror'
+                });
+            });
+            window.addEventListener('unhandledrejection', function(e) {
+                debugLogQueue.push({
+                    level: 'error',
+                    message: 'Unhandled Promise: ' + (e.reason ? (e.reason.message || String(e.reason)) : 'unknown'),
+                    source: 'unhandledrejection'
+                });
+            });
+        }
+    } catch (de) {}
+
     const originalFetch = window.fetch;
     if (originalFetch) {
         window.fetch = function (input, init) {
