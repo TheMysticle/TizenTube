@@ -41,19 +41,35 @@ app.get('/tizentube/debugger', (req, res) => {
         });
     }, 50);
 });
-const storageFile = require('path').join(__dirname, 'storage.json');
+const isTizen = __dirname.includes('/opt/usr/apps/');
+const packageId = isTizen ? __dirname.split('/')[4] : null;
+const dataPath = isTizen 
+    ? `/opt/usr/home/owner/share/Documents/`
+    : require('path').join(__dirname, '/');
+
+const storageFile = require('path').join(dataPath, 'storage.json');
 app.get('/tizentube/storage', (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    if (require('fs').existsSync(storageFile)) {
-        res.json(JSON.parse(require('fs').readFileSync(storageFile, 'utf8')));
-    } else {
+    try {
+        if (require('fs').existsSync(storageFile)) {
+            res.json(JSON.parse(require('fs').readFileSync(storageFile, 'utf8')));
+        } else {
+            res.json({ localStorage: {}, cookies: "" });
+        }
+    } catch (e) {
+        console.error('Failed to read storageFile', e);
         res.json({ localStorage: {}, cookies: "" });
     }
 });
 app.post('/tizentube/storage', express.json({limit: '10mb'}), (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    require('fs').writeFileSync(storageFile, JSON.stringify(req.body));
-    res.send('OK');
+    try {
+        require('fs').writeFileSync(storageFile, JSON.stringify(req.body));
+        res.send('OK');
+    } catch (e) {
+        console.error('Failed to write storageFile:', e);
+        res.status(500).send(e.toString());
+    }
 });
 
 // ── Debug Server ────────────────────────────────────────────────────────────────
@@ -892,12 +908,4 @@ global.isTizenTube = true;
 require('../../dist/service.js');
 
 startDebugServer();
-addLogEntry({ source: 'proxy', message: '--- TIZENTUBE FS DEBUG ---' });
-addLogEntry({ source: 'proxy', message: '__dirname: ' + __dirname });
-addLogEntry({ source: 'proxy', message: 'cwd: ' + process.cwd() });
-addLogEntry({ source: 'proxy', message: 'env HOME: ' + process.env.HOME });
-try {
-    const fs = require('fs');
-    addLogEntry({ source: 'proxy', message: 'storage.json exists: ' + fs.existsSync(require('path').join(__dirname, 'storage.json')) });
-    addLogEntry({ source: 'proxy', message: 'userScript.js exists: ' + fs.existsSync(require('path').join(__dirname, 'userScript.js')) });
-} catch (e) {}
+

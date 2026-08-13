@@ -45,8 +45,19 @@ export default function () {
                     }
                 }
             }
+            window.__tizentubeStorageLoaded = true;
         }
+    } catch (e) {
+        console.error('TizenTube: Failed to load storage from proxy', e);
+        window.__tizentubeStorageLoaded = false;
+    }
+    
+    try {
         setInterval(function() {
+            if (!window.__tizentubeStorageLoaded) {
+                console.warn('TizenTube: Storage was not loaded properly at startup. Skipping save to prevent overwriting proxy storage with empty data.');
+                return;
+            }
             var ls = {};
             for (var i = 0; i < window.localStorage.length; i++) {
                 var key = window.localStorage.key(i);
