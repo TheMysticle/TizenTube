@@ -7,7 +7,6 @@
     <content src="index.html"/>
     <feature name="http://tizen.org/feature/screen.size.all"/>
     <feature name="http://tizen.org/feature/web.service"/>
-    <icon src="icon_16b9.png" width="1920" height="1080"/>
     <icon src="icon.png" width="1024" height="1024"/>
     <tizen:metadata key="http://samsung.com/tv/metadata/prelaunch.support" value="true"/>
     <tizen:metadata key="http://samsung.com/tv/metadata/floating.navigation" value="false"/>
