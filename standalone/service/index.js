@@ -871,18 +871,33 @@ app.all('*', (req, res) => {
 
 app.listen(PORT, "127.0.0.1");
 
+// Intercept all proxy console logs to the debug dashboard
+['log', 'error', 'warn', 'info', 'debug'].forEach((level) => {
+    const originalMethod = console[level];
+    console[level] = (...args) => {
+        originalMethod.apply(console, args);
+        try {
+            const message = args.map(arg => 
+                typeof arg === 'object' ? (arg instanceof Error ? arg.stack : JSON.stringify(arg, null, 2)) : String(arg)
+            ).join(' ');
+            if (typeof addLogEntry === 'function') {
+                addLogEntry({ source: 'proxy', level: level === 'log' ? 'info' : level, message });
+            }
+        } catch (e) {}
+    };
+});
+
 // Start the DIAL server
 global.isTizenTube = true;
 require('../../dist/service.js');
 
-// Auto-start debug server if previously enabled
 startDebugServer();
-console.log('--- TIZENTUBE FS DEBUG ---');
-console.log('__dirname:', __dirname);
-console.log('cwd:', process.cwd());
-console.log('env HOME:', process.env.HOME);
+addLogEntry({ source: 'proxy', message: '--- TIZENTUBE FS DEBUG ---' });
+addLogEntry({ source: 'proxy', message: '__dirname: ' + __dirname });
+addLogEntry({ source: 'proxy', message: 'cwd: ' + process.cwd() });
+addLogEntry({ source: 'proxy', message: 'env HOME: ' + process.env.HOME });
 try {
     const fs = require('fs');
-    console.log('storage.json exists:', fs.existsSync(require('path').join(__dirname, 'storage.json')));
-    console.log('userScript.js exists:', fs.existsSync(require('path').join(__dirname, 'userScript.js')));
+    addLogEntry({ source: 'proxy', message: 'storage.json exists: ' + fs.existsSync(require('path').join(__dirname, 'storage.json')) });
+    addLogEntry({ source: 'proxy', message: 'userScript.js exists: ' + fs.existsSync(require('path').join(__dirname, 'userScript.js')) });
 } catch (e) {}
